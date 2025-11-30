@@ -10,6 +10,8 @@ AuditTrail is a **decentralized Identity and Access Management system** built wi
 
 _AuditTrail gives you complete visibility and control over your credentials_
 
+---
+
 ## Architecture
 
 **AuditTrail** is a permissioned blockchain network built on Hyperledger Fabric that provides:
@@ -25,6 +27,8 @@ _AuditTrail gives you complete visibility and control over your credentials_
 - **Fabric Network**: 2 organizations, 1 orderer, CouchDB state database
 - **Backend API (Node.js)**: REST interface with Fabric SDK
 - **Frontend (React)**: Dashboard for viewing audit trails
+
+---
 
 ## Part 1: Blockchain
 
@@ -87,13 +91,19 @@ Multi-Stage Docker Build:
 - Stage 1 (Builder): Heavy image with Go compiler, build tools
 - Stage 2 (Runtime): Minimal Alpine Linux, just the compiled binary
 
+---
+
 ## Part 2: REST API Backend
 
 Python REST API to hit with Fabric network and fetch audit logs
 
+---
+
 ## Part 3: React Frontend
 
 React frontend to see your audit logs
+
+---
 
 ## Consumption Guide
 
