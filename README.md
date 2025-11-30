@@ -47,8 +47,8 @@ Benefits:
 - Faster deployment: Less data to transfer
 - More secure
 
-## Part 2: REST API
+## Part 2: REST API Backend
 
-## Part 3: UI
+## Part 3: React Frontend
 
 ## Consumption Guide
