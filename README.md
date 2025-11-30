@@ -124,3 +124,11 @@ docker ps | grep audit-trail  # Should see 2 containers (org1, org2)
 
 peer lifecycle chaincode querycommitted -C audit-channel -n audit-trail
 ```
+
+## Used Resources
+
+- [Hyperledger Fabric Documentation](https://hyperledger-fabric.readthedocs.io/)
+- [Using Fabric Test network](https://hyperledger-fabric.readthedocs.io/en/release-2.5/test_network.html)
+- [Fabric Contract API Go](https://pkg.go.dev/github.com/hyperledger/fabric-contract-api-go/v2)
+- [CCAAS Tutorial](https://github.com/hyperledger/fabric-samples/blob/main/test-network/CHAINCODE_AS_A_SERVICE_TUTORIAL.md)
+  [Fabric SDK Node.js](https://hyperledger.github.io/fabric-sdk-node/)
