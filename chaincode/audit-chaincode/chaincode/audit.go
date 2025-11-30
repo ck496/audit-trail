@@ -12,19 +12,25 @@ import (
 	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
 )
 
-// ctx : TransactionContextInterface, alows you to read/write ledger state
-// ctx.GetStub():
-// GetStub().PutState(key, value) - Write to blockchain
-// GetStub().GetState(key) - Read from blockchain
-// GetStub().GetTxID() - Get transaction ID
-// GetStub().GetQueryResult(query) - CouchDB queries
-
 /*
-TODO:
+ ----- MODULE NOTES: -----
+ audits.go holds all the code for audit related interactions with the ledger:
 	- AuditContract struct (the main contract)
 	- Basic CRUD functions: InitLedger, LogAudit, GetAudit, AuditExists, GetAllAudits
 	- Rich Query functions: QueryAuditsByUser, QueryAuditsByDateRange, QueryAuditsByAction
-	- Helper function: queryAudits (internal)
+
+Uses hyperledger fabric SDK for writing go chaincode
+	- contractapi.Contract : base struct for contracts
+	- contractapi.TransactionContextInterface (ctx): alows you to read/write ledger state
+		ctx.GetStub():
+		GetStub().PutState(key, value) - Write to blockchain
+		GetStub().GetState(key) - Read from blockchain
+		GetStub().GetTxID() - Get transaction ID
+		GetStub().GetQueryResult(query) - CouchDB queries
+
+Uses CouchDB for Rich Queries, doing complex DB queries with the ledger
+	- CouchDB uses json based query language
+	- Good for advanced filtering
 */
 
 // AuditContract provides functions for managing audit entries
@@ -187,7 +193,7 @@ func (c *AuditContract) LogAudit(ctx contractapi.TransactionContextInterface,
 }
 
 
-// AuditExists checks if an audit entry exists in the ledger
+// HELPER AuditExists : checks if an audit entry exists in the ledger
 func (c *AuditContract) AuditExists(ctx contractapi.TransactionContextInterface, id string) (bool, error) {
 	log.Printf("[AuditExists] ENTER id=%s", id)
 
@@ -209,7 +215,7 @@ func (c *AuditContract) AuditExists(ctx contractapi.TransactionContextInterface,
 }
 
 /*
---- GET AUDIT --- 
+--- GET AUDIT by ID--- 
 retrieves a specific audit entry by ID
 returns: *AuditEntry, a pointr to AuditEntry struct, 
          -  pro for pointer: Doesn't copy entire struct, just returns memory address, can return Nil
@@ -290,6 +296,135 @@ func (c *AuditContract) GetAllAudits(ctx contractapi.TransactionContextInterface
 	return audits, nil
 }
 
+
+
+/*
+--- GET AUDITS by USER ---
+Get all audit entries for a given user
+- uses couchDB rich queries 
+*/
+func (c *AuditContract) QueryAuditsByUser(ctx contractapi.TransactionContextInterface, userId string) ([]*AuditEntry, error) {
+	log.Printf("[QueryAuditsByUser] ENTER userId=%s", userId)
+
+	// Input validation
+	if userId == "" {
+		return nil, fmt.Errorf("userId is required")
+	}
+
+	// Build CouchDB query selector
+	queryString := fmt.Sprintf(`{
+		"selector": {
+			"userId": "%s"
+		},
+		"sort": [{"timestamp": "desc"}]
+	}`, userId)
+
+	return c.queryAudits(ctx, queryString)
+}
+
+/*
+--- GET AUDITS by DATE ---
+Returns a list of audits within a time range 
+Params: startDate and endDate should be Unix timestamps in milliseconds
+*/
+func (c *AuditContract) QueryAuditsByDateRange(ctx contractapi.TransactionContextInterface, startDate int64, endDate int64) ([]*AuditEntry, error) {
+	log.Printf("[QueryAuditsByDateRange] ENTER startDate=%d endDate=%d", startDate, endDate)
+
+	// Input validation
+	if startDate < 0 || endDate < 0 {
+		return nil, fmt.Errorf("startDate and endDate must be positive timestamps")
+	}
+	if startDate > endDate {
+		return nil, fmt.Errorf("startDate must be before endDate")
+	}
+
+	// Build CouchDB query selector
+	queryString := fmt.Sprintf(`{
+		"selector": {
+			"timestamp": {
+				"$gte": %d,
+				"$lte": %d
+			}
+		},
+		"sort": [{"timestamp": "desc"}]
+	}`, startDate, endDate)
+
+	return c.queryAudits(ctx, queryString)
+}
+
+
+/*
+--- GET AUDITS by ACTION TYPE ---
+Returns audits filtered by a specific action type 
+*/
+func (c *AuditContract) QueryAuditsByAction(ctx contractapi.TransactionContextInterface, action string) ([]*AuditEntry, error) {
+	log.Printf("[QueryAuditsByAction] ENTER action=%s", action)
+
+	// Input validation
+	if action == "" {
+		return nil, fmt.Errorf("action is required")
+	}
+
+	// Validate action type
+	validActions := map[string]bool{
+		"CREATE": true, "UPDATE": true, "DELETE": true,
+		"QUERY": true, "VERIFY": true, "REVOKE": true, "ISSUE": true,
+	}
+	if !validActions[action] {
+		return nil, fmt.Errorf("invalid action: %s", action)
+	}
+
+	// Build CouchDB query selector
+	queryString := fmt.Sprintf(`{
+		"selector": {
+			"action": "%s"
+		},
+		"sort": [{"timestamp": "desc"}]
+	}`, action)
+
+	return c.queryAudits(ctx, queryString)
+}
+
+
+/*
+--- HELPER queryAudits ----
+executes CouchDB queries to get audits 
+
+*/
+func (c *AuditContract) queryAudits(ctx contractapi.TransactionContextInterface, queryString string) ([]*AuditEntry, error) {
+	log.Printf("[queryAudits] ENTER queryString=%s", queryString)
+
+	// Execute rich query
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		log.Printf("[queryAudits] ERROR err=%v", err)
+		return nil, fmt.Errorf("failed to execute query: %v", err)
+	}
+	defer resultsIterator.Close()
+
+	var audits []*AuditEntry
+
+	// Iterate through results
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			log.Printf("[queryAudits] ERROR iterating err=%v", err)
+			return nil, fmt.Errorf("failed to iterate query results: %v", err)
+		}
+
+		var audit AuditEntry
+		err = json.Unmarshal(queryResponse.Value, &audit)
+		if err != nil {
+			log.Printf("[queryAudits] ERROR unmarshaling key=%s err=%v", queryResponse.Key, err)
+			return nil, fmt.Errorf("failed to unmarshal audit entry: %v", err)
+		}
+
+		audits = append(audits, &audit)
+	}
+
+	log.Printf("[queryAudits] SUCCESS count=%d", len(audits))
+	return audits, nil
+}
 
 
 
