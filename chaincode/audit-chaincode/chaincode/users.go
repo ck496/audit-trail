@@ -1,9 +1,5 @@
 package chaincode
 
-// import hyperledger fabric SDK for writing go chaincode, provides interfaces:
-//  - contractapi.Contract : base struct for contracts
-//	- contractapi.TransactionContextInterface : alows you to read/write ledger state
-
 import (
 	// import hyperledger fabric SDK for writing go chaincode, provides interfaces:
 	//  - contractapi.Contract : base struct for contracts
@@ -300,10 +296,9 @@ func (c *UserContract) UpdateUserRole(ctx contractapi.TransactionContextInterfac
 	err = ctx.GetStub().PutState(comopositeKey, userJSON)
 	if err != nil {
 		log.Printf("[UpdateUserRole] ERROR writing user to ledger id=%s err=%v", id, err)
-		return fmt.Errorf("failed to write user ID=%s to ledger: %v", id, err)
+		return fmt.Errorf("failed to write user to ledger, ID=%s to ledger: %v", id, err)
 	}
 
-	 
 	
 	//Log success with old and new role
 	log.Printf("[UpdateUserRole] SUCCESS id=%s oldRole=%s newRole=%s", 
@@ -322,15 +317,52 @@ Do a soft delete by setting user.Active = false
 func (c *UserContract) DeactivateUser( ctx contractapi.TransactionContextInterface, id string) error {
 	log.Printf("[DeactivateUser] ENTER id=%s ", id)
 
-	// Validate input 
+	//Input validation for ID
+	if id == "" {
+		return  fmt.Errorf("id is required")
+	}
 
 	// Get user 
+	user, err := c.GetUser(ctx, id)
+	if err != nil{
+		log.Printf("[DeactivateUser] ERROR id=%s err=%v", id, err)
+		return fmt.Errorf("failed to get user from ledger, user ID=%s: %v", id, err)
+
+	}
 
 	// If user is not active return error 
+	if !user.Active{
+		log.Printf("[DeactivateUser] ERROR user already Deactivate id=%s", id)
+		return fmt.Errorf("user already Deactivate, user ID=%s, Active status=%s", id, user.Active)
+	}
 
 	// deactivate user, user.Active = false  
+	user.Active = false  
 
-	// Log success 
+	//Create composite key (same as RegisterUser/GetUser)
+	comopositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
+	if err != nil{
+		log.Printf("[DeactivateUser] ERROR creating composite key id=%s err=%v", id, err)
+		return fmt.Errorf("failed to create composite key for user ID=%s: %v", id, err)
+	}
+
+	// Marshal to JSON
+	userJSON, err := json.Marshal(user)
+	if err != nil {
+		log.Printf("[DeactivateUser] ERROR marshaling user id=%s err=%v", id, err)
+		return fmt.Errorf("failed to marshal user ID=%s: %v", id, err)
+	}
+	
+	// Write updated user back to ledger
+	err = ctx.GetStub().PutState(comopositeKey, userJSON)
+	if err != nil {
+		log.Printf("[DeactivateUser] ERROR writing user to ledger id=%s err=%v", id, err)
+		return fmt.Errorf("failed to write user to ledger, ID=%s to ledger: %v", id, err)
+	}
+
+
+	//Log success with old and new role
+	log.Printf("[DeactivateUser] SUCCESS id=%s Active status=%s", id, user.Active)
 
 	//Return nill for error
 	return nil
