@@ -1,0 +1,29 @@
+# Exclude from Docker build context (faster builds, smaller context)
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts (we rebuild inside Docker)
+chaincode
+audit-trail-cc
+*.exe
+
+# Go
+vendor/
+
+# Documentation
+*.md
+README.md
+
+# Logs
+*.log

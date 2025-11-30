@@ -2,7 +2,7 @@
 audit-trail-cc
 audit-trail-compiled 
 audit-chaincode-compiled
-audit-chaincode
+# audit-chaincode
 *.exe
 *.exe~
 *.dll
