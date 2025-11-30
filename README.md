@@ -31,7 +31,7 @@ _AuditTrail gives you complete visibility and control over your credentials_
 You can find all the
 
 - `network/`: contains the scripts, binaries needed to bring up the Fabric Network
-- `chaincode-go/`: contains Goglang based smart contracts for audits and user management. Also contains Docker files for chaincode deployment
+- `chaincode-go/`: contains GO based smart contracts and chaincode + Docker files for chaincode deployment
 
 ### The Network
 
