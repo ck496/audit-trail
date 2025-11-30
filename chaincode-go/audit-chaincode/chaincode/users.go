@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
 )
@@ -123,6 +122,12 @@ func (c *UserContract) RegisterUser(ctx contractapi.TransactionContext, id strin
 	//Get default permissions for role
 	permissions := getDefaultPermissions(role)
 
+	// Get deterministic timestamp from transaction (same across all peers)
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return fmt.Errorf("failed to get transaction timestamp: %v", err)
+	}
+
 	// Create User struct with all fields
 	user := User{
 		ID:           id,
@@ -133,7 +138,7 @@ func (c *UserContract) RegisterUser(ctx contractapi.TransactionContext, id strin
 		Organization: organization,
 		Active:       true,
 		CreatedBy:    createdBy,
-		CreatedAt:    time.Now().UnixMilli(),
+		CreatedAt:   txTimestamp.AsTime().UnixMilli(),
 	}
 
 	// Create composite key: namespaces users separately from audits 

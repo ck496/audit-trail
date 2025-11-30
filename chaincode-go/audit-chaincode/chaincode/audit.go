@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	// import hyperledger fabric SDK for writing go chaincode, provides interfaces:
 	//  - contractapi.Contract : base struct for contracts
@@ -42,11 +41,17 @@ type AuditContract struct {
 func (c *AuditContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	log.Printf("[InitLedger] ENTER")
 
+	// Get deterministic timestamp from transaction (same across all peers)
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return fmt.Errorf("failed to get transaction timestamp: %v", err)
+	}
+
 	// Sample audit entries for testing
 	audits := []AuditEntry{
 		{
 			ID:            "audit-001",
-			TimeStamp:     time.Now().UnixMilli(),
+			TimeStamp:     txTimestamp.AsTime().UnixMilli(),
 			UserID:        "user-alice",
 			UserRole:      "ADMIN",
 			Action:        "CREATE",
@@ -63,7 +68,7 @@ func (c *AuditContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 		},
 		{
 			ID:            "audit-002",
-			TimeStamp:     time.Now().UnixMilli(),
+			TimeStamp:     txTimestamp.AsTime().UnixMilli(),
 			UserID:        "user-bob",
 			UserRole:      "AUDITOR",
 			Action:        "QUERY",
@@ -152,11 +157,17 @@ func (c *AuditContract) LogAudit(ctx contractapi.TransactionContextInterface,
 
 	// Get Fabric transaction ID for tracing
 	txID := ctx.GetStub().GetTxID()
+	
+	// Get deterministic timestamp from transaction (same across all peers)
+	txTimestamp, err := ctx.GetStub().GetTxTimestamp()
+	if err != nil {
+		return fmt.Errorf("failed to get transaction timestamp: %v", err)
+	}
 
 	// Create audit entry with auto-populated fields
 	entry := AuditEntry{
 		ID:            id,
-		TimeStamp:     time.Now().UnixMilli(),
+		TimeStamp:     txTimestamp.AsTime().UnixMilli(),
 		UserID:        userId,
 		UserRole:      userRole,
 		Action:        action,
