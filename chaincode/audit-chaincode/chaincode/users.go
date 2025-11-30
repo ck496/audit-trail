@@ -73,7 +73,7 @@ Composite key:
 */
 
 // AuditContract provides functions for managing audit entries
-type AuditContract struct {
+type UserContract struct {
 	contractapi.Contract
 }
 
@@ -85,7 +85,7 @@ Add new users to ledger
 - build compositekey
 - add user to ledger 
 */
-func (c *AuditContract) RegisterUser(ctx contractapi.TransactionContext, id string, name string, email string, role string, organization string, createdBy string ) error {
+func (c *UserContract) RegisterUser(ctx contractapi.TransactionContext, id string, name string, email string, role string, organization string, createdBy string ) error {
 	log.Printf("[RegisterUser] ENTER id=%s role=%s org=%s", id, role, organization)
 
 	//Input validation (id, name, email, role required)
@@ -102,12 +102,12 @@ func (c *AuditContract) RegisterUser(ctx contractapi.TransactionContext, id stri
 		return fmt.Errorf("role is required")
 	}
 
-	// TODO: Step 2 - Validate role is ADMIN, AUDITOR, or USER
+	// Validate role is ADMIN, AUDITOR, or USER
 	validRoles := map[string]bool{
 		"ADMIN": true, "AUDITOR": true, "USER": true,
 	}
 	if !validRoles[role] {
-		return fmt.Errorf("invalid validRoles: %s. Valid Roles: ADMIN, AUDITOR, or USER", role)
+		return fmt.Errorf("invalid role: %s. Valid Roles: ADMIN, AUDITOR, or USER", role)
 	}
 
 	// Check ID length limits
@@ -116,7 +116,7 @@ func (c *AuditContract) RegisterUser(ctx contractapi.TransactionContext, id stri
 	}
 	
 	// Check if user exists 
-	exists, err := c.userExists(ctx, id)
+	exists, err := c.UserExists(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to check if user exists: %v", err)
 	}
@@ -175,34 +175,174 @@ func (c *AuditContract) RegisterUser(ctx contractapi.TransactionContext, id stri
 
 /*
 --- GET USER by ID ---
-TODO:
+Get a specific user by their ID
+Return: full User object with all fields
 */
+
+func (c *UserContract) GetUser(ctx contractapi.TransactionContextInterface, id string) (*User, error) {
+	
+	log.Printf("[GetUser] ENTER id=%s", id)
+	
+	//Input validation for ID
+	if id == "" {
+		return nil, fmt.Errorf("id is required")
+	}
+
+	//Create composite key to match how user was stored
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
+	if err != nil{
+		log.Printf("[GetUser] ERROR creating composite key id=%s err=%v", id, err)
+		return nil, fmt.Errorf("failed to create composite key for user ID=%s: %v", id, err)
+	}
+	
+	//Get state from ledger using composite key
+	userJson, err := ctx.GetStub().GetState(compositeKey)
+	if err != nil{
+		log.Printf("[GetUser] ERRORfailed to read user from ledger id=%s err=%v", id, err)
+		return nil, fmt.Errorf("failed to read user from ledger, user ID=%s: %v", id, err)
+	}
+	
+	//Check if user exists
+	if userJson == nil {
+		log.Printf("[GetUser] NOT_FOUND id=%s", id)
+		return nil, fmt.Errorf("User  ID=%s does not exist in ledger", id)
+	}
+
+	
+	//Unmarshal JSON to User struct
+	var user User
+	err = json.Unmarshal(userJson, &user)
+	if err !=nil {
+		log.Printf("[GetUser] ERROR id=%s err=%v", id, err)
+		return nil, fmt.Errorf("failed to unmarshal user from ledger ID=%s: %v", id, err)
+	
+	}
+
+	//  Log success with key user info
+	log.Printf("[GetUser] SUCCESS id=%s role=%s active=%v", id, user.Role, user.Active)
+	
+	//Return pointer to user and nil error
+	 return &user, nil
+}
 
 
 /*
 --- UPDATE USER ROLE ---
-
-TODO:
+Changes a user's role and updates their permissions based on new role
+- Only for active users
 */
+func (c *UserContract) UpdateUserRole(ctx contractapi.TransactionContextInterface, 
+	id string, newRole string) error {
+	
+	log.Printf("[UpdateUserRole] ENTER id=%s newRole=%s", id, newRole)
+	
+	//Input validation 
+	if id == "" {
+		return fmt.Errorf("id is required")
+	}
+	if newRole == "" {
+		return fmt.Errorf("newRole is required")
+	}
+
+	
+	//Validate newRole is valid (ADMIN, AUDITOR, USER)
+	validRoles := map[string]bool{
+		"ADMIN": true, "AUDITOR": true, "USER": true,
+	}
+	if !validRoles[newRole] {
+		log.Printf("[UpdateUserRole] ERROR, invalid role=%s", newRole)
+		return fmt.Errorf("invalid new role: %s. Valid Roles: ADMIN, AUDITOR, or USER", newRole)
+	}
+	
+	//Get current user from ledger
+	user, err := c.GetUser(ctx, id)
+	if err != nil{
+		log.Printf("[UpdateUserRole] ERROR id=%s err=%v", id, err)
+		return fmt.Errorf("failed to get user from ledger, user ID=%s: %v", id, err)
+
+	}
+
+	//Validate user is active (business rule)
+	//   - If !user.Active → error "cannot update role for inactive user {id}"
+	if !user.Active {
+		log.Printf("[UpdateUserRole] USER_NOT_ACTIVE id=%s ", id)
+		return fmt.Errorf("cannot update role for inactive user id:%s", id)
+	}
+
+	
+	//Check if role actually changed (optional optimization)
+	if user.Role == newRole{
+		// user already has role {newRole}
+		log.Printf("[UpdateUserRole] ROLE_EXISTS id=%v, currentRole=%v, newRole=%v", id, user.Role, newRole)
+		return fmt.Errorf("user id=%s already has role:%s", id, newRole)
+	}
+	
+	// Update to NEW role and permissions, save old role for logs later 
+	var oldRole = user.Role
+	user.Role = newRole
+	user.Permissions = getDefaultPermissions(newRole)
+	
+	//Create composite key (same as RegisterUser/GetUser)
+	comopositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
+	if err != nil{
+		log.Printf("[UpdateUserRole] ERROR creating composite key id=%s err=%v", id, err)
+		return fmt.Errorf("failed to create composite key for user ID=%s: %v", id, err)
+	}
+
+	// Marshal to JSON
+	userJSON, err := json.Marshal(user)
+	if err != nil {
+		log.Printf("[UpdateUserRole] ERROR marshaling user id=%s err=%v", id, err)
+		return fmt.Errorf("failed to marshal user ID=%s: %v", id, err)
+	}
+	
+	// Write updated user back to ledger
+	err = ctx.GetStub().PutState(comopositeKey, userJSON)
+	if err != nil {
+		log.Printf("[UpdateUserRole] ERROR writing user to ledger id=%s err=%v", id, err)
+		return fmt.Errorf("failed to write user ID=%s to ledger: %v", id, err)
+	}
+
+	 
+	
+	//Log success with old and new role
+	log.Printf("[UpdateUserRole] SUCCESS id=%s oldRole=%s newRole=%s", 
+	             id, oldRole, newRole)
+
+
+	//Return nil err for success
+	return  nil
+}
 
 /*
 --- DEACTIVATE USER ROLE ---
-
-TODO:
+Do a soft delete by setting user.Active = false 
 */
 
-/*
---- UPDATE USER ROLE ---
+func (c *UserContract) DeactivateUser( ctx contractapi.TransactionContextInterface, id string) error {
+	log.Printf("[DeactivateUser] ENTER id=%s ", id)
 
-TODO:
-*/
+	// Validate input 
+
+	// Get user 
+
+	// If user is not active return error 
+
+	// deactivate user, user.Active = false  
+
+	// Log success 
+
+	//Return nill for error
+	return nil
+
+}
+ 
 
 /*
 --- CHECK  USER EXISTS ---
 Check if the user is in the ledger 
-TODO:
 */
-func (c *AuditContract) userExists(ctx contractapi.TransactionContext, id string) (bool, error){
+func (c *UserContract) UserExists(ctx contractapi.TransactionContext, id string) (bool, error){
 	log.Printf("[UserExists] ENTER id=%s ", id)
 
 	// Input validation

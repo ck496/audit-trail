@@ -238,7 +238,7 @@ func (c *AuditContract) GetAudit(ctx contractapi.TransactionContextInterface, id
 	// Check if exists
 	if auditJSON == nil {
 		log.Printf("[GetAudit] NOT_FOUND id=%s", id)
-		return nil, fmt.Errorf("audit entry %s does not exist", id)
+		return nil, fmt.Errorf("audit entry %s does not exist in ledger", id)
 	}
 
 	// Unmarshal JSON
