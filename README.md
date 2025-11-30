@@ -10,13 +10,15 @@ AuditTrail is a decentralized IAM system built with Hyperledger Fabric that:
 
 _AuditTrail gives you complete visibility and control over your credentials_
 
-## Background
+## Part 1: Blockchain
 
-## The Network
+### Architecture
 
-## Chain code
+### The Network
 
-## Deployment
+### Chain code
+
+### Deployment
 
 We use **Chaincode-as-a-Service (CCAAS)** instead of the traditional Docker-in-Docker based deployment method for model for building and deploying chain code as it is industry best practice and better for production ready.
 
@@ -26,7 +28,7 @@ Peer → Receives source code → Builds internally → FAILS
 CCAAS (production-ready)
 YOU build image externally → Peer connects to pre-built container via gRPC
 
-### Docker
+#### Docker
 
 The `Dockerfile`
 
@@ -44,3 +46,9 @@ Benefits:
 - Smaller image: ~20MB vs ~800MB
 - Faster deployment: Less data to transfer
 - More secure
+
+## Part 2: REST API
+
+## Part 3: UI
+
+## Consumption Guide
