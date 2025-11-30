@@ -1,4 +1,4 @@
-module audit-trail/chaincode-go/audit-chaincode
+module github.com/ck496/audit-trail/chaincode-go/audit-chaincode
 
 go 1.25.4
 

@@ -1,6 +1,6 @@
 # Go build artifacts
 audit-trail-cc
-audit-trail-compiled 
+audit-trail-chaincode 
 audit-chaincode-compiled
 # audit-chaincode
 *.exe

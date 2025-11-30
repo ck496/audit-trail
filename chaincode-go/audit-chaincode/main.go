@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"audit-trail/chaincode-go/audit-chaincode/chaincode"
+	"github.com/ck496/audit-trail/chaincode-go/audit-chaincode/chaincode"
 
 	"github.com/hyperledger/fabric-contract-api-go/v2/contractapi"
 )

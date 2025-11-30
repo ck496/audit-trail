@@ -25,7 +25,7 @@ COPY . .
 # -a: Force rebuild of all packages
 # -installsuffix cgo: Suffix for install directory
 # -ldflags="-w -s": Strip debug info (smaller binary)
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o audit-trail-chaincode .
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o audit-trail-chaincode .
 
 # OUTPUT: Single binary file `audit-trail-chaincode` with everything compiled in
 
