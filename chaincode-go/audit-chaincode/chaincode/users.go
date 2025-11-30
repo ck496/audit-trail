@@ -137,7 +137,7 @@ func (c *UserContract) RegisterUser(ctx contractapi.TransactionContext, id strin
 	}
 
 	// Create composite key: namespaces users separately from audits 
-	comopositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
 	if err != nil{
 		log.Printf("[RegisterUser] ERROR creating composite key id=%s err=%v", id, err)
 		return fmt.Errorf("failed to create composite key for user ID=%s: %v", id, err)
@@ -150,7 +150,7 @@ func (c *UserContract) RegisterUser(ctx contractapi.TransactionContext, id strin
 	}
 
 	// Write user to  ledger
-	err = ctx.GetStub().PutState(comopositeKey, userJSON)
+	err = ctx.GetStub().PutState(compositeKey, userJSON)
 	if err != nil {
 		log.Printf("[RegisterUser] ERROR writing user id=%s err=%v", id, err)
 		return fmt.Errorf("failed to write user ID=%s to ledger: %v", id, err)
@@ -279,7 +279,7 @@ func (c *UserContract) UpdateUserRole(ctx contractapi.TransactionContextInterfac
 	user.Permissions = getDefaultPermissions(newRole)
 	
 	//Create composite key (same as RegisterUser/GetUser)
-	comopositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
 	if err != nil{
 		log.Printf("[UpdateUserRole] ERROR creating composite key id=%s err=%v", id, err)
 		return fmt.Errorf("failed to create composite key for user ID=%s: %v", id, err)
@@ -293,7 +293,7 @@ func (c *UserContract) UpdateUserRole(ctx contractapi.TransactionContextInterfac
 	}
 	
 	// Write updated user back to ledger
-	err = ctx.GetStub().PutState(comopositeKey, userJSON)
+	err = ctx.GetStub().PutState(compositeKey, userJSON)
 	if err != nil {
 		log.Printf("[UpdateUserRole] ERROR writing user to ledger id=%s err=%v", id, err)
 		return fmt.Errorf("failed to write user to ledger, ID=%s to ledger: %v", id, err)
@@ -312,6 +312,7 @@ func (c *UserContract) UpdateUserRole(ctx contractapi.TransactionContextInterfac
 /*
 --- DEACTIVATE USER ROLE ---
 Do a soft delete by setting user.Active = false 
+- Preserves data just marks it as inactive rather than deleting the whole thing
 */
 
 func (c *UserContract) DeactivateUser( ctx contractapi.TransactionContextInterface, id string) error {
@@ -340,7 +341,7 @@ func (c *UserContract) DeactivateUser( ctx contractapi.TransactionContextInterfa
 	user.Active = false  
 
 	//Create composite key (same as RegisterUser/GetUser)
-	comopositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
+	compositeKey, err := ctx.GetStub().CreateCompositeKey("USER", []string{id})
 	if err != nil{
 		log.Printf("[DeactivateUser] ERROR creating composite key id=%s err=%v", id, err)
 		return fmt.Errorf("failed to create composite key for user ID=%s: %v", id, err)
@@ -354,7 +355,7 @@ func (c *UserContract) DeactivateUser( ctx contractapi.TransactionContextInterfa
 	}
 	
 	// Write updated user back to ledger
-	err = ctx.GetStub().PutState(comopositeKey, userJSON)
+	err = ctx.GetStub().PutState(compositeKey, userJSON)
 	if err != nil {
 		log.Printf("[DeactivateUser] ERROR writing user to ledger id=%s err=%v", id, err)
 		return fmt.Errorf("failed to write user to ledger, ID=%s to ledger: %v", id, err)
