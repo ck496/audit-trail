@@ -1,51 +1,26 @@
-# ---- STAGE 1: Builder ----
-# Use official Go image for building
-FROM golang:1.25.4-alpine AS builder
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
 
-# Install git, needed for go mod download
-RUN apk add --no-cache git
+FROM golang:alpine AS builder
 
-# Set working directory
 WORKDIR /app
-
-# Copy go.mod and go.sum first (Docker layer caching optimization)
-# - If `go.mod` unchanged, Docker reuses cached layer
-# - Speeds up rebuilds when only code changes
-COPY go.mod go.sum ./
-
-# Download dependencies (cached if go.mod/go.sum unchanged)
-RUN go mod download
-
-# Copy rest of source code: main.go, chaincode/ )
 COPY . .
 
-# Build the chaincode binary
-# CGO_ENABLED=0: Static linking (no external C dependencies)
-# GOOS=linux: Target Linux (even though building on macOS)
-# -a: Force rebuild of all packages
-# -installsuffix cgo: Suffix for install directory
-# -ldflags="-w -s": Strip debug info (smaller binary)
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o audit-trail-chaincode .
+# Download dependencies
+RUN go mod download
 
-# OUTPUT: Single binary file `audit-trail-chaincode` with everything compiled in
+# Build the chaincode
+RUN CGO_ENABLED=0 go build -o audit-trail-chaincode .
 
-
-
-# ----- STAGE 2: Runtime -----
-# Use minimal Alpine Linux image, just enough to run the binary
 FROM alpine:latest
 
-# Add ca-certificates for HTTPS connections
-RUN apk --no-cache add ca-certificates
+# Copy the compiled binary from builder
+COPY --from=builder /app/audit-trail-chaincode /usr/local/bin/audit-trail-chaincode
 
-# Set working directory
-WORKDIR /root/
+# Set execute permissions
+RUN chmod +x /usr/local/bin/audit-trail-chaincode
 
-# Copy ONLY the compiled binary from builder stage
-COPY --from=builder /app/audit-trail-chaincode .
-
-# Expose chaincode server port (CCAAS uses 9999)
 EXPOSE 9999
 
-# Run the chaincode when container starts
-CMD ["./audit-trail-chaincode"]
+CMD ["audit-trail-chaincode"]

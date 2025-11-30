@@ -14,7 +14,7 @@
 Thumbs.db
 
 # Build artifacts (we rebuild inside Docker)
-chaincode
+audit-trail-chaincode
 audit-trail-cc
 *.exe
 
