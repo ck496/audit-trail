@@ -1,0 +1,30 @@
+# Go build artifacts
+audit-trail-cc
+audit-trail-compiled 
+audit-chaincode-compiled
+audit-chaincode
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go dependencies
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+EOF
