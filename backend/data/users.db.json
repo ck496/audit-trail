@@ -1,0 +1,16 @@
+[
+  {
+    "id": "a08e74b5-6187-4b8d-a519-7cfdc5a75969",
+    "username": "alice",
+    "email": "alice@example.com",
+    "role": "ADMIN",
+    "organization": "Org1",
+    "permissions": [
+      "READ",
+      "WRITE"
+    ],
+    "active": true,
+    "createdAt": 1764904751566,
+    "updatedAt": 1764904751566
+  }
+]
