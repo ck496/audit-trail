@@ -1,4 +1,4 @@
-import { getContract } from "../fabric/fabricConnect.js";
+import { getContract } from "../fabric/fabricConnectMOCK.js";
 
 // MOCKED AUDIT CONTROLLER
 
@@ -16,7 +16,7 @@ export async function logAudit(req, res) {
 
     res.json({
       message: "Audit logged (MOCK)",
-      result: JSON.parse(result)
+      result: JSON.parse(result),
     });
   } catch (error) {
     console.error("Error logging audit:", error);
@@ -41,10 +41,7 @@ export async function getAuditsByUser(req, res) {
     const { id } = req.params;
 
     const contract = await getContract();
-    const result = await contract.evaluateTransaction(
-      "QueryAuditByUser",
-      id
-    );
+    const result = await contract.evaluateTransaction("QueryAuditByUser", id);
 
     res.json(JSON.parse(result));
   } catch (error) {

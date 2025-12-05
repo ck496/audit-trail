@@ -1,4 +1,4 @@
-import { getContract } from "../fabric/fabricConnect.js";
+import { getContract } from "../fabric/fabricConnectMOCK.js";
 
 export async function registerUser(req, res) {
   try {
@@ -16,7 +16,7 @@ export async function registerUser(req, res) {
     res.json({
       success: true,
       message: "User Registered",
-      data: result.toString()
+      data: result.toString(),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
