@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { queryAuditsByUser, queryAuditsByAction, queryAuditsByDateRange } from '../services/api';
+import { getAllAudits, queryAuditsByUser, queryAuditsByAction, queryAuditsByDateRange } from '../services/api';
 import './AuditLogs.css';
 
 const AuditLogs = () => {
-    const [queryType, setQueryType] = useState('user'),
+    const [queryType, setQueryType] = useState('all'),
         [userId, setUserId] = useState(''),
         [action, setAction] = useState('CREATE'),
         [startDate, setStartDate] = useState(''),
@@ -20,7 +20,9 @@ const AuditLogs = () => {
 
         try {
             let data;
-            if (queryType === 'user') {
+            if (queryType === 'all') {
+                data = await getAllAudits();
+            } else if (queryType === 'user') {
                 data = await queryAuditsByUser(userId);
             } else if (queryType === 'action') {
                 data = await queryAuditsByAction(action);
@@ -79,11 +81,20 @@ const AuditLogs = () => {
                     <div className="form-group" style={{ flex: 1 }}>
                         <label>Query Type</label>
                         <select value={queryType} onChange={(e) => setQueryType(e.target.value)}>
+                            <option value="all">Get All Audits</option>
                             <option value="user">By User ID</option>
                             <option value="action">By Action</option>
                             <option value="daterange">By Date Range</option>
                         </select>
                     </div>
+
+                    {queryType === 'all' && (
+                        <div className="form-group" style={{ flex: 1 }}>
+                            <label>User ID</label>
+                            <input type="text" value="" disabled placeholder="User ID"
+                                   style={{ backgroundColor: '#f5f5f5', cursor: 'not-allowed', color: '#999' }} />
+                        </div>
+                    )}
 
                     {queryType === 'user' && (
                         <div className="form-group" style={{ flex: 1 }}>

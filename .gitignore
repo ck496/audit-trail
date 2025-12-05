@@ -1,7 +1,7 @@
 # ==============================================
 # Hyperledger Fabric - audit-trail .gitignore
 # ==============================================
-
+docs/
 # ============ Dependencies ============
 node_modules/
 vendor/
