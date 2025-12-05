@@ -11,8 +11,10 @@ let gateway = null;
 let contract = null;
 
 /**
- * buildWallet() builds a wallet and enrolls Admin Identity
+ * AUTHENTICATION: buildWallet() builds a wallet and enrolls Admin Identity
  * - runs ones when server starts and creates a wallet with admin creds
+ * - BUILD WALLET allows you to connect to fabric with cryptographic identity
+ *      - cryptographic identity:  X.509 certificates + private keys to sign transactions.)
  */
 async function buildWallet() {
   try {
@@ -40,7 +42,7 @@ async function buildWallet() {
 
     if (keyFiles.length === 0) {
       throw new Error(
-        `[FabricConnect] ❌ ERROR :  No private key found in keystore directory: ${keyPath}`
+        `[FabricConnect] ERROR :  No private key found in keystore directory: ${keyPath}`
       );
     }
 
@@ -60,12 +62,14 @@ async function buildWallet() {
 
     // Store identity in wallet
     await wallet.put(fabricConfig.userId, identityData);
-    console.log(`SUCCESS: Admin identity enrolled and stored in wallet`);
+    console.log(
+      `[FabricConnect] SUCCESS: Admin identity enrolled and stored in wallet`
+    );
 
     return wallet;
   } catch (error) {
     console.error(
-      `[FabricConnect] ❌ ERROR : Failed to build wallet: ${error.message}`
+      `[FabricConnect] ERROR : Failed to build wallet: ${error.message}`
     );
     throw new Error(
       `[FabricConnect]: Wallet initialization failed: ${error.message}`
@@ -77,7 +81,7 @@ async function buildWallet() {
  * connectGateway(): Connectss to Fabric Gateway
  * Establishes connection to network and gets the contract instance
  */
-async function connectGateway() {
+export async function connectGateway() {
   // If already connected, return existng contract
   if (contract) {
     return contract;
@@ -122,7 +126,7 @@ async function connectGateway() {
     return contract;
   } catch (error) {
     console.error(
-      `[FabricConnect]: ❌ ERROR: Failed to connect to Fabric network: ${error}`
+      `[FabricConnect]: ERROR: Failed to connect to Fabric network: ${error}`
     );
     throw error;
   }
