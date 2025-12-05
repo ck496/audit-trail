@@ -122,7 +122,11 @@ cd network/test-network
 cd chaincode-go/audit-chaincode
 docker build -t audit-trail-cc:1.0 .
 
-# Deploy contracts and chaincode via CCAAS:
+# Open Detailed Logs monitor to see whats happening on the network
+cd network/test-network
+./monitordocker.sh fabric_test
+
+# Bring up network and Deploy contracts and chaincode via CCAAS:
 cd network/test-network
 ./network.sh deployCCAAS \
   -ccn audit-trail \
