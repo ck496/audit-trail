@@ -12,6 +12,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Request logging middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  console.log(`[APP.js]:<- Request Received:  ${req.method} ${req.path}`);
+
+  // Capture response
+  const originalSend = res.send;
+  res.send = function (data) {
+    const duration = Date.now() - start;
+    console.log(
+      `[APP.js]:-> Response Sent:  ${req.method} ${req.path} [${res.statusCode}] ${duration}ms`
+    );
+    originalSend.call(this, data);
+  };
+
+  next();
+});
+
 // Routes
 app.use("/audit", auditRoutes);
 app.use("/users", userRoutes);
