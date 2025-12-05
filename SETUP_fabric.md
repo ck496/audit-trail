@@ -1,4 +1,4 @@
-# Fabric Network 7 Chaincode Setup & Deployment Guide
+# Fabric Network & Chaincode Setup & Deployment Guide
 
 This guide walks you through setting up the Hyperledger Fabric network, deploying the audit trail chaincode, and testing all functionality from scratch.
 
