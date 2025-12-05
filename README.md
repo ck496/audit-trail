@@ -115,7 +115,10 @@ Then follow the steps in the following docs IN ORDER:
 2. `SETUP_backend.md`
 3. `SETUP_frontend.md`
 
+## Demo: 
+![Get All Audits Displayed](img/getAllAudits_frontend_Demo.png)
 
+---
 ## Used Resources
 
 - [Hyperledger Fabric Documentation](https://hyperledger-fabric.readthedocs.io/)
@@ -123,3 +126,4 @@ Then follow the steps in the following docs IN ORDER:
 - [Fabric Contract API Go](https://pkg.go.dev/github.com/hyperledger/fabric-contract-api-go/v2)
 - [CCAAS Tutorial](https://github.com/hyperledger/fabric-samples/blob/main/test-network/CHAINCODE_AS_A_SERVICE_TUTORIAL.md)
   [Fabric SDK Node.js](https://hyperledger.github.io/fabric-sdk-node/)
+  
