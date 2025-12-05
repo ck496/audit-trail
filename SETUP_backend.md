@@ -350,3 +350,14 @@ curl -X DELETE http://localhost:5008/users/user-test-001
   "userId": "user-test-001"
 }
 ```
+
+## Backend Demo Images:
+Server Startup and connecting to Fabric Logs: 
+![Server connection to fabric](img/server_runing_Demo.png)
+
+
+Screenshot of using postman to POST and GET audits
+POST:
+![POST Audit](img/post_audit_postman_demo.png)
+GET:
+![GET audit](img/get_audit_postman_Demo.png)

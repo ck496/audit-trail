@@ -409,3 +409,9 @@ cd network/test-network
 - Removes containers and volumes
 - Cleans up crypto material
 - Preserves the chaincode image (for faster restart)
+
+## Fabric Demo Images:
+
+Screenshot of fabric network logs as backend invokes Chaincode to perform CRUD operations on the ledger
+
+![Fabric Logs after backed does CRUD on network](img/fabric_crud_logs_demo.png)

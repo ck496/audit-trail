@@ -47,3 +47,8 @@ The frontend expects a backend API running at `http://localhost:5008` (configura
 - `GET /api/audit` - Fetch audit logs
 - `GET /api/audit/user/:userId` - Query audits by user
 - `POST /api/reports` - Generate compliance report
+
+## Backend Demo Images:
+
+Fetching all Audits from ledger displayed on frontend:
+![Get All Audits Displayed](img/getAllAudits_frontend_Demo.png)
