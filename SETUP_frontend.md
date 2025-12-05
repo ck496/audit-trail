@@ -12,12 +12,14 @@ A React-based frontend dashboard for the Audit Trail Hyperledger Fabric applicat
 ## How to run
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
 - npm
 
 ### Installation
 
 1. Navigate to the frontend directory:
+
    ```bash
    cd frontend
    ```
@@ -30,15 +32,17 @@ A React-based frontend dashboard for the Audit Trail Hyperledger Fabric applicat
 ### Running the Application
 
 Start the development server:
+
 ```bash
 npm start
 ```
 
 ## API Integration
 
-The frontend expects a backend API running at `http://localhost:3000` (configurable in `src/services/api.js`).
+The frontend expects a backend API running at `http://localhost:5008` (configurable in `src/services/api.js`).
 
 **Key Endpoints:**
+
 - `POST /api/users` - Register a new user
 - `GET /api/audit` - Fetch audit logs
 - `GET /api/audit/user/:userId` - Query audits by user
