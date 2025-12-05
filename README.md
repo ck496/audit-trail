@@ -4,9 +4,9 @@ AuditTrail is a **decentralized Identity and Access Management system** built wi
 
 - Immutably logs all system activities
 - Supports multi-organization access control
-- Detects anomalies and suspicious activities
 - Offers real-time audit streaming
 - Enables tamper-proof record keeping
+- Can help Detects anomalies and suspicious activities
 
 _AuditTrail gives you complete visibility and control over your credentials_
 
@@ -72,11 +72,12 @@ You can find all the
 
 We use **Chaincode-as-a-Service (CCAAS)** instead of the traditional Docker-in-Docker based deployment method for model for building and deploying chain code as it is industry best practice and better for production ready.
 
-Traditional
-Peer → Receives source code → Builds internally = ERROR PRONE
+Traditional (Docker in Docker build)
+
+Peer Receives source code and Builds internally = ERROR PRONE
 
 CCAAS (production-ready)
-YOU build image externally → Peer connects to pre-built container via gRPC
+YOU build image externally Peer connects to pre-built container via gRPC
 
 #### Docker
 
