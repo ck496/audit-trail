@@ -3,73 +3,11 @@
 This guide walks you through setting up the Hyperledger Fabric network, deploying the audit trail chaincode, and testing all functionality from scratch.
 
 ---
+## Table of Contents
 
-## Get Started Quick
+1. [Detailed Step by Step](#rerequisites)
+2. [Qick Start](#quick-start)
 
-you can find detailed sections below
-
-### Clone The repo
-
-```bash
-git clone https://github.com/ck496/audit-trail.git
-cd audit-trail
-```
-
-### Run the Fabric Network
-
-**IMPORTANT**: Make sure you have completed the prerequisites (section below) and have all the right libraries
-
-```bash
-# 0. Open Detailed Logs monitor to see whats happening on the network
-cd network/test-network
-./monitordocker.sh fabric_test
-
-# 1. Start network
-cd network/test-network
-./network.sh up createChannel -c audit-channel -ca -s couchdb
-
-# 2. Build chaincode (if not already built)
-cd ../../chaincode-go/audit-chaincode
-docker build -t audit-trail-chaincode:1.0 .
-
-# 3. Deploy chaincode
-cd ../../network/test-network
-./network.sh deployCCAAS -ccn audit-trail -ccp ../../chaincode-go/audit-chaincode -c audit-channel
-# 3.1 Verify Chaincode Deployment
-docker ps --filter "name=audit-trail"
-#3.2 **Verify chaincode is committed:**
-#   - configure peer CLI binaries, add them to path
-export PATH=${PWD}/../bin:$PATH
-export FABRIC_CFG_PATH=${PWD}/../config/
-
-peer lifecycle chaincode querycommitted -C audit-channel -n audit-trail
-
-### 5: Set Environment Variables for peer/org1
-export PATH=${PWD}/../bin:$PATH
-export FABRIC_CFG_PATH=${PWD}/../config/
-export CORE_PEER_TLS_ENABLED=true
-export CORE_PEER_LOCALMSPID="Org1MSP"
-export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
-export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
-export CORE_PEER_ADDRESS=localhost:7051
-
-# 5. Initialize ledger - call chaincode's InitLedger and load init data
-peer chaincode invoke -o localhost:7050 \
-  --ordererTLSHostnameOverride orderer.example.com \
-  --tls \
-  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
-  -C audit-channel \
-  -n audit-trail \
-  --peerAddresses localhost:7051 \
-  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
-  --peerAddresses localhost:9051 \
-  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
-  -c '{"function":"InitLedger","Args":[]}'
-
-# 6. Test by getting all audits
-peer chaincode query -C audit-channel -n audit-trail -c '{"function":"GetAllAudits","Args":[]}'
-
-```
 
 ---
 
@@ -410,6 +348,75 @@ cd network/test-network
 - Cleans up crypto material
 - Preserves the chaincode image (for faster restart)
 
+---
+
+## Quick Start
+
+you can find detailed sections below
+
+### Clone The repo
+
+```bash
+git clone https://github.com/ck496/audit-trail.git
+cd audit-trail
+```
+
+### Run the Fabric Network
+
+**IMPORTANT**: Make sure you have completed the prerequisites (section below) and have all the right libraries
+
+```bash
+# 0. Open Detailed Logs monitor to see whats happening on the network
+cd network/test-network
+./monitordocker.sh fabric_test
+
+# 1. Start network
+cd network/test-network
+./network.sh up createChannel -c audit-channel -ca -s couchdb
+
+# 2. Build chaincode (if not already built)
+cd ../../chaincode-go/audit-chaincode
+docker build -t audit-trail-chaincode:1.0 .
+
+# 3. Deploy chaincode
+cd ../../network/test-network
+./network.sh deployCCAAS -ccn audit-trail -ccp ../../chaincode-go/audit-chaincode -c audit-channel
+# 3.1 Verify Chaincode Deployment
+docker ps --filter "name=audit-trail"
+#3.2 **Verify chaincode is committed:**
+#   - configure peer CLI binaries, add them to path
+export PATH=${PWD}/../bin:$PATH
+export FABRIC_CFG_PATH=${PWD}/../config/
+
+peer lifecycle chaincode querycommitted -C audit-channel -n audit-trail
+
+### 5: Set Environment Variables for peer/org1
+export PATH=${PWD}/../bin:$PATH
+export FABRIC_CFG_PATH=${PWD}/../config/
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+
+# 5. Initialize ledger - call chaincode's InitLedger and load init data
+peer chaincode invoke -o localhost:7050 \
+  --ordererTLSHostnameOverride orderer.example.com \
+  --tls \
+  --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" \
+  -C audit-channel \
+  -n audit-trail \
+  --peerAddresses localhost:7051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" \
+  --peerAddresses localhost:9051 \
+  --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" \
+  -c '{"function":"InitLedger","Args":[]}'
+
+# 6. Test by getting all audits
+peer chaincode query -C audit-channel -n audit-trail -c '{"function":"GetAllAudits","Args":[]}'
+
+```
+---
 ## Fabric Demo Images:
 
 Screenshot of fabric network logs as backend invokes Chaincode to perform CRUD operations on the ledger
