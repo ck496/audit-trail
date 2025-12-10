@@ -351,10 +351,38 @@ curl -X DELETE http://localhost:5008/users/user-test-001
 }
 ```
 
-## Backend Demo Images:
-Server Startup and connecting to Fabric Logs: 
-![Server connection to fabric](img/server_runing_Demo.png)
+## TroubleShoot
 
+```
+ERROR:
+error: [DiscoveryResultsProcessor]: parseDiscoveryResults[audit-channel] - Channel:audit-channel received discovery error:access denied
+[FabricConnect]: ERROR: Failed to connect to Fabric network: Error: DiscoveryService: audit-channel error: access denied
+
+#Solution remove old wallet:
+rm -rf /Users/chriskurian/go/src/github.com/ck496/audit-trail/application/wallet
+
+#Removing it forces the backend to re-enroll with the complete profile
+
+
+npm start
+
+# You should see
+[FabricConnect]: Enrolling admin identity to wallet...
+[FabricConnect] SUCCESS: Admin identity enrolled and stored in wallet
+[FabricConnect]: Connected to Fabric Gateway
+[FabricConnect]: Connected to channel: audit-channel
+[FabricConnect]: Got contract: audit-trail
+[APP.js]: Successfully connected to Fabric network
+
+
+
+
+```
+
+## Backend Demo Images:
+
+Server Startup and connecting to Fabric Logs:
+![Server connection to fabric](img/server_runing_Demo.png)
 
 Screenshot of using postman to POST and GET audits
 POST:
