@@ -10,6 +10,8 @@ AuditTrail is a **decentralized Identity and Access Management system** built wi
 
 _AuditTrail gives you complete visibility and control over your credentials_
 
+Check [AuditTrail Slide Deck](https://www.canva.com/design/DAG7FisElaA/Xg-xGdUeKloJ3scqtsABww/edit) for more info 
+
 ---
 
 ## Architecture
